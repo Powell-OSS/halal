@@ -1,0 +1,6 @@
+[install]
+# Use a hoisted node_modules layout (npm/yarn-classic style) so prettier
+# plugins, postcss plugins, and other tooling that resolves by name from a
+# package's own cwd can find their transitive deps. Bun's default isolated
+# mode breaks these workflows in monorepos.
+linker = "hoisted"
