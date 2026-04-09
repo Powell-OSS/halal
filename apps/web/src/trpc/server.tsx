@@ -32,6 +32,17 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   queryClient: getQueryClient,
 });
 
+/**
+ * Server-side caller for one-shot data fetching from React Server Components.
+ *
+ * Use this when a page just needs the data once on the server (no client
+ * hydration). For pages that hydrate into client queries, use `prefetch` +
+ * `HydrateClient` instead.
+ */
+export const getCaller = cache(async () =>
+  appRouter.createCaller(await createContext()),
+);
+
 export function HydrateClient(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
   return (

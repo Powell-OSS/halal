@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
 import { cn } from "@powell-oss/ui";
-import { ThemeProvider, ThemeToggle } from "@powell-oss/ui/theme";
+import { ThemeProvider } from "@powell-oss/ui/theme";
 import { Toaster } from "@powell-oss/ui/toast";
 
+import { Header } from "~/components/header";
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -13,28 +14,24 @@ import "~/app/styles.css";
 export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://turbo.t3.gg"
+      ? "https://halal.example.com"
       : "http://localhost:3000",
   ),
-  title: "Create T3 Turbo",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  title: "Halal Food Finder",
+  description:
+    "Find verified halal restaurants near you, certified by trusted authorities.",
   openGraph: {
-    title: "Create T3 Turbo",
-    description: "Simple monorepo with shared backend for web & mobile apps",
-    url: "https://create-t3-turbo.vercel.app",
-    siteName: "Create T3 Turbo",
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@jullerino",
-    creator: "@jullerino",
+    title: "Halal Food Finder",
+    description:
+      "Find verified halal restaurants near you, certified by trusted authorities.",
+    siteName: "Halal Food Finder",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { media: "(prefers-color-scheme: light)", color: "#FBF7EE" },
+    { media: "(prefers-color-scheme: dark)", color: "#1E1814" },
   ],
 };
 
@@ -42,9 +39,17 @@ const geistSans = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",
 });
+
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
 });
 
 export default function RootLayout(props: { children: React.ReactNode }) {
@@ -55,13 +60,14 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           "bg-background text-foreground min-h-screen font-sans antialiased",
           geistSans.variable,
           geistMono.variable,
+          instrumentSerif.variable,
         )}
       >
         <ThemeProvider>
-          <TRPCReactProvider>{props.children}</TRPCReactProvider>
-          <div className="absolute right-4 bottom-4">
-            <ThemeToggle />
-          </div>
+          <TRPCReactProvider>
+            <Header />
+            {props.children}
+          </TRPCReactProvider>
           <Toaster />
         </ThemeProvider>
       </body>
