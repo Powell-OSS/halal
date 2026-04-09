@@ -28,7 +28,9 @@ export function SearchView() {
 
   const q = searchParams.get("q") ?? undefined;
   const cat = searchParams.get("cat") ?? undefined;
-  const hasFilter = (q && q.trim().length > 0) || (cat && cat !== "all");
+  const trimmedQ = q?.trim();
+  const activeCatParam = cat && cat !== "all" ? cat : undefined;
+  const hasFilter = (trimmedQ?.length ?? 0) > 0 || activeCatParam != null;
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
@@ -36,8 +38,8 @@ export function SearchView() {
         {
           lat: location.lat,
           lng: location.lng,
-          q: q?.trim() || undefined,
-          cat: cat && cat !== "all" ? cat : undefined,
+          q: trimmedQ ?? undefined,
+          cat: activeCatParam,
         },
         {
           getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -65,14 +67,14 @@ export function SearchView() {
     router.replace("/search", { scroll: false });
   };
 
-  const activeCat = cat && cat !== "all" ? cat.toLowerCase() : "all";
+  const activeCat = activeCatParam?.toLowerCase() ?? "all";
 
   return (
     <div className="space-y-8">
       {/* ── Active filters summary ────────────────────────────── */}
       {hasFilter && (
         <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
-          {q && q.trim() && (
+          {trimmedQ && (
             <span className="border-border bg-card text-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
               🔍 {q}
             </span>

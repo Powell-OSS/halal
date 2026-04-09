@@ -102,32 +102,37 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   );
 
   const requestGps = useCallback(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    if (!navigator.geolocation) return;
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      (pos) => {
         const { latitude, longitude } = pos.coords;
-        const label =
-          (await reverseGeocode(latitude, longitude).catch(() => null)) ??
-          `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
-        const next: UserLocation = {
-          lat: latitude,
-          lng: longitude,
-          label,
-          source: "gps",
-        };
-        writeStored(next);
-        setLocationState(next);
-        setLoading(false);
+        void reverseGeocode(latitude, longitude)
+          .catch(() => null)
+          .then((resolvedLabel) => {
+            const label =
+              resolvedLabel ??
+              `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+            const next: UserLocation = {
+              lat: latitude,
+              lng: longitude,
+              label,
+              source: "gps",
+            };
+            writeStored(next);
+            setLocationState(next);
+            setLoading(false);
+          });
       },
       () => setLoading(false),
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300_000 },
     );
   }, []);
 
-  // One GPS request on mount.
+  // One GPS request on mount (deferred so setState isn't synchronous in effect).
   useEffect(() => {
-    requestGps();
+    const timer = setTimeout(requestGps, 0);
+    return () => clearTimeout(timer);
   }, [requestGps]);
 
   return (
