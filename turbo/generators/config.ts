@@ -10,13 +10,13 @@ interface PackageJson {
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
   plop.setGenerator("init", {
-    description: "Generate a new package for the Acme Monorepo",
+    description: "Generate a new package for the Powell Monorepo",
     prompts: [
       {
         type: "input",
         name: "name",
         message:
-          "What is the name of the package? (You can skip the `@acme/` prefix)",
+          "What is the name of the package? (You can skip the `@powell-oss/` prefix and `powell-oss` will be added automatically)",
       },
       {
         type: "input",
@@ -28,8 +28,8 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
     actions: [
       (answers) => {
         if ("name" in answers && typeof answers.name === "string") {
-          if (answers.name.startsWith("@acme/")) {
-            answers.name = answers.name.replace("@acme/", "");
+          if (answers.name.startsWith("@powell-oss/")) {
+            answers.name = answers.name.replace("@powell-oss/", "");
           }
         }
         return "Config sanitized";
@@ -79,12 +79,12 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
          * Install deps and format everything
          */
         if ("name" in answers && typeof answers.name === "string") {
-          // execSync("pnpm dlx sherif@latest --fix", {
+          // execSync("bunx sherif@latest --fix", {
           //   stdio: "inherit",
           // });
-          execSync("pnpm i", { stdio: "inherit" });
+          execSync("bun install", { stdio: "inherit" });
           execSync(
-            `pnpm prettier --write packages/${answers.name}/** --list-different`,
+            `bun run prettier --write packages/${answers.name}/** --list-different`,
           );
           return "Package scaffolded";
         }
