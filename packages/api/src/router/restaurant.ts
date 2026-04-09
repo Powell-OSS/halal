@@ -1,21 +1,16 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { and, asc, between, eq, getTableColumns, sql } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 
 import { restaurant } from "@powell-oss/db/schema";
 
 import { publicProcedure } from "../trpc";
 
+const DEFAULT_PAGE_SIZE = 20;
+
 /**
  * Haversine distance in miles between two lat/lng points, computed in SQL.
- *
- * Formula:  2 * R * asin(sqrt(
- *   sin((lat2 - lat1) / 2) ^ 2 +
- *   cos(lat1) * cos(lat2) * sin((lng2 - lng1) / 2) ^ 2
- * ))
- *
- * R = 3958.8 miles (earth radius).
  */
 function haversineDistanceSql(lat: number, lng: number) {
   return sql<number>`
@@ -28,77 +23,98 @@ function haversineDistanceSql(lat: number, lng: number) {
 }
 
 /**
- * Approximate bounding box for a given radius in miles around a lat/lng.
- * Used as a cheap pre-filter so Postgres can use indexes before running
- * the expensive Haversine on every row.
- *
- * 1 degree of latitude ≈ 69 miles.
- * 1 degree of longitude ≈ 69 * cos(latitude) miles.
+ * Build optional WHERE conditions for text search and cuisine category.
  */
-function boundingBox(lat: number, lng: number, radiusMiles: number) {
-  const latDelta = radiusMiles / 69;
-  const lngDelta = radiusMiles / (69 * Math.cos((lat * Math.PI) / 180));
-  return {
-    latMin: (lat - latDelta).toFixed(7),
-    latMax: (lat + latDelta).toFixed(7),
-    lngMin: (lng - lngDelta).toFixed(7),
-    lngMax: (lng + lngDelta).toFixed(7),
-  };
-}
+function buildFilters(q?: string, cat?: string) {
+  const conditions = [];
 
-const DEFAULT_RADIUS_MILES = 25;
+  if (q) {
+    const pattern = `%${q}%`;
+    conditions.push(
+      sql`(
+        ${restaurant.name} ILIKE ${pattern}
+        OR ${restaurant.tagline} ILIKE ${pattern}
+        OR EXISTS (
+          SELECT 1 FROM unnest(${restaurant.cuisines}) AS c
+          WHERE lower(c) LIKE ${`%${q.toLowerCase()}%`}
+        )
+      )`,
+    );
+  }
+
+  if (cat) {
+    conditions.push(
+      sql`EXISTS (
+        SELECT 1 FROM unnest(${restaurant.cuisines}) AS c
+        WHERE lower(c) = ${cat.toLowerCase()}
+      )`,
+    );
+  }
+
+  return conditions.length > 0 ? and(...conditions) : undefined;
+}
 
 export const restaurantRouter = {
   /**
-   * List restaurants. When lat/lng are provided, returns results sorted by
-   * distance with a computed `distanceMiles` field. Otherwise returns all
-   * restaurants sorted alphabetically.
+   * Paginated restaurant list with server-side search, category filter,
+   * and distance sort.
+   *
+   * Returns `items` + `nextCursor` (offset-based). The client splits items
+   * into "nearby" (≤100mi) and "other" (>100mi) for display.
    */
   all: publicProcedure
     .input(
       z
         .object({
-          lat: z.number().min(-90).max(90),
-          lng: z.number().min(-180).max(180),
-          radiusMiles: z.number().positive().optional(),
+          lat: z.number().min(-90).max(90).optional(),
+          lng: z.number().min(-180).max(180).optional(),
+          q: z.string().optional(),
+          cat: z.string().optional(),
+          cursor: z.number().int().nonnegative().default(0),
+          limit: z
+            .number()
+            .int()
+            .positive()
+            .max(100)
+            .default(DEFAULT_PAGE_SIZE),
         })
         .optional(),
     )
     .query(async ({ ctx, input }) => {
-      // No location → return all, sorted by name.
-      if (!input?.lat || !input?.lng) {
-        const rows = await ctx.db
-          .select({
-            ...getTableColumns(restaurant),
-            distanceMiles: sql<number | null>`null`,
-          })
-          .from(restaurant)
-          .orderBy(asc(restaurant.name));
-        return rows;
-      }
+      const {
+        lat,
+        lng,
+        q,
+        cat,
+        cursor = 0,
+        limit = DEFAULT_PAGE_SIZE,
+      } = input ?? {};
 
-      const { lat, lng } = input;
-      const radius = input.radiusMiles ?? DEFAULT_RADIUS_MILES;
-      const box = boundingBox(lat, lng, radius);
-      const distance = haversineDistanceSql(lat, lng);
+      const where = buildFilters(q, cat);
+      const hasLocation = lat != null && lng != null;
 
-      const rows = await ctx.db
+      const distance = hasLocation
+        ? haversineDistanceSql(lat, lng)
+        : sql<number | null>`null`;
+
+      const items = await ctx.db
         .select({
           ...getTableColumns(restaurant),
           distanceMiles: distance,
         })
         .from(restaurant)
-        .where(
-          and(
-            between(restaurant.latitude, box.latMin, box.latMax),
-            between(restaurant.longitude, box.lngMin, box.lngMax),
-          ),
-        )
-        .orderBy(asc(distance));
+        .where(where)
+        .orderBy(hasLocation ? asc(distance) : asc(restaurant.name))
+        .limit(limit + 1) // fetch one extra to determine if there's a next page
+        .offset(cursor);
 
-      // Filter by actual Haversine distance (bounding box is a rectangle, not
-      // a circle — corners overshoot the radius slightly).
-      return rows.filter((r) => (r.distanceMiles ?? Infinity) <= radius);
+      const hasMore = items.length > limit;
+      if (hasMore) items.pop(); // remove the extra probe item
+
+      return {
+        items,
+        nextCursor: hasMore ? cursor + limit : null,
+      };
     }),
 
   bySlug: publicProcedure
