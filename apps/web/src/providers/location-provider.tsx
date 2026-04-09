@@ -102,7 +102,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   );
 
   const requestGps = useCallback(() => {
-    if (!navigator.geolocation) return;
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
