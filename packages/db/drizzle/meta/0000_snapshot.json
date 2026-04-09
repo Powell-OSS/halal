@@ -1,5 +1,5 @@
 {
-  "id": "dc9a6cfc-2b70-4350-931a-7cf7aad99cce",
+  "id": "36293488-be69-45e9-8916-b8c4016cd400",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -151,9 +151,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "distance_miles": {
-          "name": "distance_miles",
-          "type": "numeric(4, 1)",
+        "latitude": {
+          "name": "latitude",
+          "type": "numeric(10, 7)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "numeric(10, 7)",
           "primaryKey": false,
           "notNull": true
         },

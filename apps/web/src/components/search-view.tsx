@@ -3,22 +3,31 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Search, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Locate, Search, X } from "lucide-react";
 
 import { cn } from "@powell-oss/ui";
 import { Input } from "@powell-oss/ui/input";
 
 import { RestaurantCard } from "~/components/restaurant-card";
 import { categories } from "~/lib/categories";
+import { useLocation } from "~/providers/location-provider";
 import { useTRPC } from "~/trpc/react";
 
 const DEBOUNCE_MS = 200;
 
 export function SearchView() {
   const trpc = useTRPC();
-  const { data: restaurants } = useSuspenseQuery(
-    trpc.restaurant.all.queryOptions(),
+  const { location, loading: locLoading } = useLocation();
+
+  // Pass user location into the query so the server computes distances and
+  // sorts by nearest. The query key changes when location changes, so
+  // react-query will automatically refetch.
+  const { data: restaurants = [], isLoading } = useQuery(
+    trpc.restaurant.all.queryOptions({
+      lat: location.lat,
+      lng: location.lng,
+    }),
   );
 
   const router = useRouter();
@@ -32,12 +41,10 @@ export function SearchView() {
 
   const [value, setValue] = useState(urlQuery);
 
-  // Auto-focus the search input on mount.
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Sync local input state when URL changes (e.g. category click, browser nav).
   useEffect(() => {
     setValue(urlQuery);
   }, [urlQuery]);
@@ -71,7 +78,7 @@ export function SearchView() {
     router.replace(pathname, { scroll: false });
   };
 
-  // Filter restaurants by URL state.
+  // Client-side text + category filter over the server-sorted (by distance) list.
   const q = urlQuery.trim().toLowerCase();
   const cat = urlCat.toLowerCase();
   const hasFilter = q.length > 0 || (cat.length > 0 && cat !== "all");
@@ -119,6 +126,20 @@ export function SearchView() {
         )}
       </form>
 
+      {/* ── Location indicator ─────────────────────────────────── */}
+      <div className="text-muted-foreground flex items-center gap-2 text-xs">
+        <Locate className={cn("h-3.5 w-3.5", locLoading && "animate-pulse")} />
+        {locLoading ? (
+          "Finding your location…"
+        ) : location.source === "gps" ? (
+          <>Sorted by distance from your location</>
+        ) : location.source === "stored" ? (
+          <>Sorted by distance from your last known location</>
+        ) : (
+          <>Showing results near Chicago, IL (default)</>
+        )}
+      </div>
+
       {/* ── Cuisine filter chips ───────────────────────────────── */}
       <div className="-mx-4 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 [&::-webkit-scrollbar]:hidden">
         <div className="flex w-max gap-2.5 py-1">
@@ -148,11 +169,12 @@ export function SearchView() {
       <div className="flex items-baseline justify-between">
         <div>
           <div className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-            {hasFilter ? "Results" : "All restaurants"}
+            {hasFilter ? "Results" : "Nearest to you"}
           </div>
           <h2 className="font-display text-foreground mt-1 text-2xl tracking-tight italic sm:text-3xl">
-            {filtered.length}{" "}
-            {filtered.length === 1 ? "restaurant" : "restaurants"}
+            {isLoading
+              ? "Loading…"
+              : `${filtered.length} ${filtered.length === 1 ? "restaurant" : "restaurants"}`}
           </h2>
         </div>
         {hasFilter && (
@@ -167,7 +189,9 @@ export function SearchView() {
       </div>
 
       {/* ── Results grid / empty states ─────────────────────────── */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <SearchSkeleton />
+      ) : filtered.length === 0 ? (
         <NoResults q={q} cat={cat} />
       ) : (
         <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,6 +200,20 @@ export function SearchView() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function SearchSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-3">
+          <div className="bg-muted aspect-[4/3] animate-pulse rounded-2xl" />
+          <div className="bg-muted h-5 w-2/3 animate-pulse rounded" />
+          <div className="bg-muted h-4 w-1/2 animate-pulse rounded" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -190,14 +228,18 @@ function NoResults({ q, cat }: { q: string; cat: string }) {
         {q && cat && cat !== "all" ? (
           <>
             Nothing found for{" "}
-            <span className="text-foreground font-semibold">"{q}"</span> in{" "}
-            <span className="text-foreground font-semibold">{cat}</span>.
+            <span className="text-foreground font-semibold">
+              &ldquo;{q}&rdquo;
+            </span>{" "}
+            in <span className="text-foreground font-semibold">{cat}</span>.
           </>
         ) : q ? (
           <>
             Nothing found for{" "}
-            <span className="text-foreground font-semibold">"{q}"</span>. Try
-            another dish, cuisine, or restaurant.
+            <span className="text-foreground font-semibold">
+              &ldquo;{q}&rdquo;
+            </span>
+            . Try another dish, cuisine, or restaurant.
           </>
         ) : (
           <>

@@ -25,7 +25,8 @@ interface SeedRestaurant {
   reviewCount: number;
   deliveryMinMinutes: number;
   deliveryMaxMinutes: number;
-  distanceMiles: string;
+  latitude: string;
+  longitude: string;
   priceLevel: number;
   certification: string;
   address: string;
@@ -33,6 +34,7 @@ interface SeedRestaurant {
   menu: SeedMenuItem[];
 }
 
+// Real geocoded coordinates for Chicago addresses.
 const data: SeedRestaurant[] = [
   {
     slug: "shahi-darbar",
@@ -44,7 +46,8 @@ const data: SeedRestaurant[] = [
     reviewCount: 1284,
     deliveryMinMinutes: 25,
     deliveryMaxMinutes: 35,
-    distanceMiles: "1.2",
+    latitude: "41.9975",
+    longitude: "-87.6718",
     priceLevel: 2,
     certification: "HFSAA",
     address: "412 Devon Ave, Chicago, IL",
@@ -109,7 +112,8 @@ const data: SeedRestaurant[] = [
     reviewCount: 932,
     deliveryMinMinutes: 20,
     deliveryMaxMinutes: 30,
-    distanceMiles: "0.8",
+    latitude: "41.9685",
+    longitude: "-87.6775",
     priceLevel: 2,
     certification: "HMA",
     address: "1820 W Lawrence Ave, Chicago, IL",
@@ -153,7 +157,8 @@ const data: SeedRestaurant[] = [
     reviewCount: 2103,
     deliveryMinMinutes: 15,
     deliveryMaxMinutes: 25,
-    distanceMiles: "0.5",
+    latitude: "41.9840",
+    longitude: "-87.6685",
     priceLevel: 2,
     certification: "IFANCA",
     address: "5601 N Clark St, Chicago, IL",
@@ -197,7 +202,8 @@ const data: SeedRestaurant[] = [
     reviewCount: 612,
     deliveryMinMinutes: 30,
     deliveryMaxMinutes: 45,
-    distanceMiles: "2.1",
+    latitude: "41.9975",
+    longitude: "-87.7082",
     priceLevel: 2,
     certification: "HFSAA",
     address: "3201 W Devon Ave, Chicago, IL",
@@ -228,7 +234,8 @@ const data: SeedRestaurant[] = [
     reviewCount: 845,
     deliveryMinMinutes: 25,
     deliveryMaxMinutes: 40,
-    distanceMiles: "1.7",
+    latitude: "41.9330",
+    longitude: "-87.6538",
     priceLevel: 3,
     certification: "Self-certified",
     address: "2828 N Sheffield Ave, Chicago, IL",
@@ -265,7 +272,8 @@ const data: SeedRestaurant[] = [
     reviewCount: 1567,
     deliveryMinMinutes: 15,
     deliveryMaxMinutes: 25,
-    distanceMiles: "0.9",
+    latitude: "41.9215",
+    longitude: "-87.6489",
     priceLevel: 2,
     certification: "HFSAA",
     address: "2200 N Halsted St, Chicago, IL",
@@ -292,13 +300,202 @@ const data: SeedRestaurant[] = [
       },
     ],
   },
+  // ── San Francisco ────────────────────────────────────────
+  {
+    slug: "zareen-sf",
+    name: "Zareen's",
+    imageUrl: "https://picsum.photos/seed/zareens/800/500",
+    tagline: "Pakistani comfort food beloved by Silicon Valley",
+    cuisines: ["Pakistani", "Indian"],
+    rating: "4.8",
+    reviewCount: 3420,
+    deliveryMinMinutes: 20,
+    deliveryMaxMinutes: 35,
+    latitude: "37.4419",
+    longitude: "-122.1430",
+    priceLevel: 2,
+    certification: "Self-certified",
+    address: "365 S California Ave, Palo Alto, CA",
+    hours: "11:00 AM – 9:30 PM",
+    menu: [
+      {
+        section: "Grills",
+        name: "Chicken Chapli Kebab",
+        description: "Spiced ground chicken patty with herbs and onion",
+        priceCents: 1599,
+        popular: true,
+      },
+      {
+        section: "Grills",
+        name: "Lamb Seekh Kebab",
+        description: "Charcoal-grilled minced lamb with cumin and coriander",
+        priceCents: 1799,
+      },
+      {
+        section: "Biryani",
+        name: "Chicken Biryani",
+        description: "Fragrant basmati layered with saffron chicken",
+        priceCents: 1699,
+        popular: true,
+      },
+      {
+        section: "Wraps",
+        name: "Chicken Boti Roll",
+        description: "Tandoori chicken tikka in fresh naan with chutney",
+        priceCents: 1399,
+      },
+    ],
+  },
+  {
+    slug: "old-jerusalem-sf",
+    name: "Old Jerusalem",
+    imageUrl: "https://picsum.photos/seed/old-jerusalem/800/500",
+    tagline: "Family-owned Palestinian kitchen on Mission Street since 1992",
+    cuisines: ["Lebanese", "Mediterranean", "Palestinian"],
+    rating: "4.5",
+    reviewCount: 1876,
+    deliveryMinMinutes: 15,
+    deliveryMaxMinutes: 25,
+    latitude: "37.7562",
+    longitude: "-122.4195",
+    priceLevel: 2,
+    certification: "Self-certified",
+    address: "2976 Mission St, San Francisco, CA",
+    hours: "11:00 AM – 10:00 PM",
+    menu: [
+      {
+        section: "Mezze",
+        name: "Baba Ghanoush",
+        description: "Smoky roasted eggplant with tahini and lemon",
+        priceCents: 799,
+      },
+      {
+        section: "Mezze",
+        name: "Foul Mudammas",
+        description: "Slow-cooked fava beans with olive oil, garlic, and lemon",
+        priceCents: 899,
+      },
+      {
+        section: "Plates",
+        name: "Lamb Shawarma Plate",
+        description:
+          "Spit-roasted lamb over rice with pickles and garlic sauce",
+        priceCents: 1699,
+        popular: true,
+      },
+      {
+        section: "Plates",
+        name: "Mixed Grill",
+        description: "Chicken shish, lamb kofta, and beef kebab with hummus",
+        priceCents: 1999,
+        popular: true,
+      },
+    ],
+  },
+  {
+    slug: "shalimar-sf",
+    name: "Shalimar",
+    imageUrl: "https://picsum.photos/seed/shalimar-sf/800/500",
+    tagline: "No-frills Pakistani grill on Polk Street — tandoori since 1975",
+    cuisines: ["Pakistani", "Indian"],
+    rating: "4.3",
+    reviewCount: 2145,
+    deliveryMinMinutes: 10,
+    deliveryMaxMinutes: 20,
+    latitude: "37.7867",
+    longitude: "-122.4204",
+    priceLevel: 1,
+    certification: "HMA",
+    address: "532 Jones St, San Francisco, CA",
+    hours: "11:30 AM – 11:30 PM",
+    menu: [
+      {
+        section: "Tandoori",
+        name: "Tandoori Chicken (Half)",
+        description:
+          "Bone-in chicken marinated in yogurt and spices, clay-oven fired",
+        priceCents: 1099,
+        popular: true,
+      },
+      {
+        section: "Tandoori",
+        name: "Seekh Kebab (4 pcs)",
+        description: "Ground lamb skewers with green chili and cilantro",
+        priceCents: 1299,
+      },
+      {
+        section: "Curries",
+        name: "Goat Karahi",
+        description:
+          "Bone-in goat slow-cooked in tomato, ginger, and green chili",
+        priceCents: 1599,
+        popular: true,
+      },
+      {
+        section: "Curries",
+        name: "Chicken Tikka Masala",
+        description: "Tandoori chicken chunks in creamy tomato sauce",
+        priceCents: 1399,
+      },
+      {
+        section: "Breads",
+        name: "Garlic Naan",
+        description: "Tandoor-baked flatbread with garlic and butter",
+        priceCents: 399,
+      },
+    ],
+  },
+  {
+    slug: "aria-korean-halal",
+    name: "Aria Korean Halal",
+    imageUrl: "https://picsum.photos/seed/aria-korean/800/500",
+    tagline: "Halal Korean fried chicken and bibimbap in the Tenderloin",
+    cuisines: ["Korean", "Asian"],
+    rating: "4.6",
+    reviewCount: 987,
+    deliveryMinMinutes: 15,
+    deliveryMaxMinutes: 30,
+    latitude: "37.7837",
+    longitude: "-122.4141",
+    priceLevel: 2,
+    certification: "HFSAA",
+    address: "318 Eddy St, San Francisco, CA",
+    hours: "11:00 AM – 9:00 PM",
+    menu: [
+      {
+        section: "Fried Chicken",
+        name: "Yangnyeom Chicken (8 pcs)",
+        description: "Sweet-spicy gochujang-glazed halal fried chicken",
+        priceCents: 1599,
+        popular: true,
+      },
+      {
+        section: "Fried Chicken",
+        name: "Soy Garlic Chicken (8 pcs)",
+        description: "Crispy chicken tossed in soy-garlic glaze",
+        priceCents: 1599,
+      },
+      {
+        section: "Rice Bowls",
+        name: "Beef Bibimbap",
+        description:
+          "Seasoned halal beef, vegetables, egg, gochujang over rice",
+        priceCents: 1499,
+        popular: true,
+      },
+      {
+        section: "Rice Bowls",
+        name: "Chicken Bulgogi Bowl",
+        description: "Marinated chicken with pickled daikon and sesame",
+        priceCents: 1399,
+      },
+    ],
+  },
 ];
 
 async function seed() {
   console.log("🌱 Seeding database…");
 
-  // Idempotent: clear existing data first so re-running the seed produces a
-  // clean state. Cascade FK on menu_item handles the menu cleanup.
   await db.delete(menuItem);
   await db.delete(restaurant);
 
