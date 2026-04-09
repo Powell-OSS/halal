@@ -13,8 +13,8 @@
         "typescript": "catalog:",
       },
     },
-    "apps/nextjs": {
-      "name": "@powell-oss/nextjs",
+    "apps/web": {
+      "name": "@powell-oss/web",
       "dependencies": {
         "@powell-oss/api": "workspace:*",
         "@powell-oss/auth": "workspace:*",
@@ -91,9 +91,9 @@
     "packages/db": {
       "name": "@powell-oss/db",
       "dependencies": {
-        "@vercel/postgres": "^0.10.0",
         "drizzle-orm": "^0.44.7",
         "drizzle-zod": "^0.8.3",
+        "postgres": "^3.4.5",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -594,8 +594,6 @@
 
     "@powell-oss/github": ["@powell-oss/github@workspace:tooling/github"],
 
-    "@powell-oss/nextjs": ["@powell-oss/nextjs@workspace:apps/nextjs"],
-
     "@powell-oss/prettier-config": ["@powell-oss/prettier-config@workspace:tooling/prettier"],
 
     "@powell-oss/tailwind-config": ["@powell-oss/tailwind-config@workspace:tooling/tailwind"],
@@ -605,6 +603,8 @@
     "@powell-oss/ui": ["@powell-oss/ui@workspace:packages/ui"],
 
     "@powell-oss/validators": ["@powell-oss/validators@workspace:packages/validators"],
+
+    "@powell-oss/web": ["@powell-oss/web@workspace:apps/web"],
 
     "@prisma/client": ["@prisma/client@5.22.0", "", { "peerDependencies": { "prisma": "*" }, "optionalPeers": ["prisma"] }, "sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA=="],
 
@@ -1425,6 +1425,8 @@
     "possible-typed-array-names": ["possible-typed-array-names@1.1.0", "", {}, "sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg=="],
 
     "postcss": ["postcss@8.5.9", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw=="],
+
+    "postgres": ["postgres@3.4.9", "", {}, "sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw=="],
 
     "postgres-array": ["postgres-array@3.0.4", "", {}, "sha512-nAUSGfSDGOaOAEGwqsRY27GPOea7CNipJPOA7lPbdEpx5Kg3qzdP0AaWC5MlhTWV9s4hFX39nomVZ+C4tnGOJQ=="],
 
