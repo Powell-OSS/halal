@@ -6,7 +6,9 @@ import { ThemeProvider } from "@powell-oss/ui/theme";
 import { Toaster } from "@powell-oss/ui/toast";
 
 import { Header } from "~/components/header";
+import { LocationOnboarding } from "~/components/location-onboarding";
 import { env } from "~/env";
+import { LocationProvider } from "~/providers/location-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/app/styles.css";
@@ -65,8 +67,11 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       >
         <ThemeProvider>
           <TRPCReactProvider>
-            <Header />
-            {props.children}
+            <LocationProvider>
+              <LocationOnboarding />
+              <Header />
+              {props.children}
+            </LocationProvider>
           </TRPCReactProvider>
           <Toaster />
         </ThemeProvider>

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ChevronDown, MapPin, ShoppingBag } from "lucide-react";
 
 import { ThemeToggle } from "@powell-oss/ui/theme";
 
-import { HeaderSearch } from "./header-search";
+import { SearchBar } from "./search-bar";
 
 export function Header() {
   return (
@@ -21,24 +20,7 @@ export function Header() {
           </span>
         </Link>
 
-        <button
-          type="button"
-          className="border-border text-foreground hover:bg-muted hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition md:flex"
-        >
-          <MapPin className="text-primary h-4 w-4" />
-          <span className="max-w-[180px] truncate">Chicago, IL</span>
-          <ChevronDown className="text-muted-foreground h-4 w-4" />
-        </button>
-
-        <HeaderSearch />
-
-        <button
-          type="button"
-          aria-label="Cart"
-          className="text-foreground hover:bg-muted relative hidden h-10 w-10 items-center justify-center rounded-full transition sm:flex"
-        >
-          <ShoppingBag className="h-5 w-5" />
-        </button>
+        <SearchBar />
 
         <ThemeToggle />
       </div>

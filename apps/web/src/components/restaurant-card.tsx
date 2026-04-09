@@ -6,7 +6,7 @@ import { cn } from "@powell-oss/ui";
 
 import { priceLevelLabel } from "~/lib/format";
 
-type Restaurant = RouterOutputs["restaurant"]["all"][number];
+type Restaurant = RouterOutputs["restaurant"]["all"]["items"][number];
 
 interface Props {
   restaurant: Restaurant;
@@ -88,8 +88,12 @@ export function RestaurantCard({
           <span>
             {restaurant.deliveryMinMinutes}–{restaurant.deliveryMaxMinutes} min
           </span>
-          <span className="text-border">·</span>
-          <span>{Number(restaurant.distanceMiles).toFixed(1)} mi</span>
+          {restaurant.distanceMiles != null && (
+            <>
+              <span className="text-border">·</span>
+              <span>{Number(restaurant.distanceMiles).toFixed(1)} mi</span>
+            </>
+          )}
         </div>
       </div>
     </Link>
