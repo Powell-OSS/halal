@@ -1,26 +1,10 @@
-# create-t3-turbo
+# Halal Food Finder
 
-## Installation
+A web app for discovering halal restaurants and food spots near you.
 
-> [!NOTE]
->
-> Make sure to follow the system requirements specified in [`package.json#engines`](./package.json#L4) before proceeding.
+## Stack
 
-There are two ways of initializing an app using the `create-t3-turbo` starter. You can either use this repository as a template:
-
-![use-as-template](https://github.com/t3-oss/create-t3-turbo/assets/51714798/bb6c2e5d-d8b6-416e-aeb3-b3e50e2ca994)
-
-or use Turbo's CLI to init your project (use Bun as package manager):
-
-```bash
-npx create-turbo@latest -e https://github.com/t3-oss/create-t3-turbo
-```
-
-## About
-
-Ever wondered how to migrate your T3 application into a monorepo? Stop right here! This is the perfect starter repo to get you running with the perfect stack!
-
-It uses [Turborepo](https://turborepo.com) and contains:
+A [Turborepo](https://turborepo.com) monorepo built on the T3 stack:
 
 ```text
 .github
@@ -29,120 +13,83 @@ It uses [Turborepo](https://turborepo.com) and contains:
 .vscode
   └─ Recommended extensions and settings for VSCode users
 apps
-  └─ nextjs
-      ├─ Next.js 16
-      ├─ React 19
-      ├─ Tailwind CSS v4
-      └─ E2E Typesafe API Server & Client
+  └─ nextjs              Next.js 16 + React 19 + Tailwind CSS v4
 packages
-  ├─ api
-  │   └─ tRPC v11 router definition
-  ├─ auth
-  │   └─ Authentication using better-auth.
-  ├─ db
-  │   └─ Typesafe db calls using Drizzle & Supabase
-  └─ ui
-      └─ Start of a UI package for the webapp using shadcn-ui
+  ├─ api                 tRPC v11 router definition
+  ├─ auth                Authentication via better-auth (Google OAuth)
+  ├─ db                  Drizzle ORM + Supabase Postgres
+  ├─ ui                  Shared shadcn/ui components
+  └─ validators          Shared Zod schemas
 tooling
-  ├─ eslint
-  │   └─ shared, fine-grained, eslint presets
-  ├─ prettier
-  │   └─ shared prettier configuration
-  ├─ tailwind
-  │   └─ shared tailwind theme and configuration
-  └─ typescript
-      └─ shared tsconfig you can extend from
+  ├─ eslint              Shared ESLint presets
+  ├─ prettier            Shared Prettier configuration
+  ├─ tailwind            Shared Tailwind theme
+  └─ typescript          Shared tsconfig bases
 ```
+
+Package manager: [Bun](https://bun.sh) (≥ 1.3). Node ≥ 22.21 (see [`.nvmrc`](./.nvmrc)).
 
 ## Quick Start
 
-> **Note**
-> The [db](./packages/db) package is preconfigured to use Supabase and is **edge-bound** with the [Vercel Postgres](https://github.com/vercel/storage/tree/main/packages/postgres) driver. If you're using something else, make the necessary modifications to the [schema](./packages/db/src/schema.ts) as well as the [client](./packages/db/src/index.ts) and the [drizzle config](./packages/db/drizzle.config.ts). If you want to switch to non-edge database driver, remove `export const runtime = "edge";` [from all pages and api routes](https://github.com/t3-oss/create-t3-turbo/issues/634#issuecomment-1730240214).
-
-To get it running, follow the steps below:
-
-### 1. Setup dependencies
-
 ```bash
-# Install dependencies
+# 1. Install dependencies
 bun install
 
-# Configure environment variables
-# There is an `.env.example` in the root directory you can use for reference
+# 2. Configure environment variables
 cp .env.example .env
+# Fill in POSTGRES_URL, AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET
 
-# Push the Drizzle schema to the database
+# 3. Push the Drizzle schema to the database
 bun run db:push
+
+# 4. Start the dev server
+bun run dev
 ```
 
-### 2. Generate Better Auth Schema
+The Next.js app boots on <http://localhost:3000>.
 
-This project uses [Better Auth](https://www.better-auth.com) for authentication. The auth schema needs to be generated using the Better Auth CLI before you can use the authentication features.
+## Authentication
+
+This project uses [Better Auth](https://www.better-auth.com) with Google as the only OAuth provider. To regenerate the auth schema after changing auth config:
 
 ```bash
-# Generate the Better Auth schema
 bun --filter @powell-oss/auth generate
 ```
 
-This command runs the Better Auth CLI with the following configuration:
+This rewrites `packages/db/src/auth-schema.ts` from the config in `packages/auth/script/auth-cli.ts`.
 
-- **Config file**: `packages/auth/script/auth-cli.ts` - A CLI-only configuration file (isolated from src to prevent imports)
-- **Output**: `packages/db/src/auth-schema.ts` - Generated Drizzle schema for authentication tables
+## Common scripts
 
-The generation process:
+| Script | What it does |
+| --- | --- |
+| `bun run dev` | Run all apps in watch mode via `turbo watch` |
+| `bun run dev:next` | Run only the Next.js app |
+| `bun run build` | Build every workspace |
+| `bun run lint` / `bun run lint:fix` | ESLint across all workspaces |
+| `bun run format` / `bun run format:fix` | Prettier across all workspaces |
+| `bun run typecheck` | `tsc --noEmit` across all workspaces |
+| `bun run db:push` | Push the Drizzle schema to the database |
+| `bun run db:studio` | Open Drizzle Studio |
+| `bun run ui-add` | Add a shadcn/ui component to `@powell-oss/ui` |
 
-1. Reads the Better Auth configuration from `packages/auth/script/auth-cli.ts`
-2. Generates the appropriate database schema based on your auth setup
-3. Outputs a Drizzle-compatible schema file to the `@powell-oss/db` package
-
-> **Note**: The `auth-cli.ts` file is placed in the `script/` directory (instead of `src/`) to prevent accidental imports from other parts of the codebase. This file is exclusively for CLI schema generation and should **not** be used directly in your application. For runtime authentication, use the configuration from `packages/auth/src/index.ts`.
-
-For more information about the Better Auth CLI, see the [official documentation](https://www.better-auth.com/docs/concepts/cli#generate).
-
-### 3a. When it's time to add a new UI component
-
-Run the `ui-add` script to add a new UI component using the interactive `shadcn/ui` CLI:
+## Adding a new package
 
 ```bash
-bun run ui-add
+bun run turbo gen init
 ```
 
-When the component(s) has been installed, you should be good to go and start using it in your app.
-
-### 3b. When it's time to add a new package
-
-To add a new package, simply run `bun run turbo gen init` in the monorepo root. This will prompt you for a package name as well as if you want to install any dependencies to the new package (of course you can also do this yourself later).
-
-The generator sets up the `package.json`, `tsconfig.json` and a `index.ts`, as well as configures all the necessary configurations for tooling around your package such as formatting, linting and typechecking. When the package is created, you're ready to go build out the package.
-
-## FAQ
-
-### Does this pattern leak backend code to my client applications?
-
-No, it does not. The `api` package should only be a production dependency in the Next.js application where it's served. This lets you have full typesafety in your client applications, while keeping your backend code safe.
-
-If you need to share runtime code between the client and server, such as input validation schemas, you can create a separate `shared` package for this and import it on both sides.
+The generator scaffolds `package.json`, `tsconfig.json`, an `eslint.config.ts`, and a `src/index.ts`.
 
 ## Deployment
 
-### Next.js
+### Next.js (Vercel)
 
-#### Deploy to Vercel
+1. Create a new project on [Vercel](https://vercel.com), selecting `apps/nextjs` as the root directory.
+2. Set the env vars: `POSTGRES_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`.
+3. Deploy.
 
-Let's deploy the Next.js application to [Vercel](https://vercel.com). If you've never deployed a Turborepo app there, don't worry, the steps are quite straightforward. You can also read the [official Turborepo guide](https://vercel.com/docs/concepts/monorepos/turborepo) on deploying to Vercel.
+The auth proxy plugin from better-auth lets OAuth keep working in preview deployments without re-registering callback URLs per branch.
 
-1. Create a new project on Vercel, select the `apps/nextjs` folder as the root directory. Vercel's zero-config system should handle all configurations for you.
+## License
 
-2. Add your `POSTGRES_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, and `AUTH_GOOGLE_SECRET` environment variables.
-
-3. Done! Your app should successfully deploy.
-
-### Auth Proxy
-
-The auth proxy comes as a better-auth plugin. This is required for the Next.js app to be able to authenticate users in preview deployments. The auth proxy is not used for OAuth requests in production deployments.
-
-## References
-
-The stack originates from [create-t3-app](https://github.com/t3-oss/create-t3-app).
-
-A [blog post](https://jumr.dev/blog/t3-turbo) where I wrote how to migrate a T3 app into this.
+MIT — see [LICENSE](./LICENSE).
