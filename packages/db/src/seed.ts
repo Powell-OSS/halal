@@ -237,8 +237,7 @@ const data: SeedRestaurant[] = [
       {
         section: "Kabobs",
         name: "Koobideh",
-        description:
-          "Two skewers of seasoned ground beef with saffron rice",
+        description: "Two skewers of seasoned ground beef with saffron rice",
         priceCents: 1899,
         popular: true,
       },
@@ -275,8 +274,7 @@ const data: SeedRestaurant[] = [
       {
         section: "Burgers",
         name: "Classic Smash",
-        description:
-          "Two halal beef patties, American cheese, special sauce",
+        description: "Two halal beef patties, American cheese, special sauce",
         priceCents: 999,
         popular: true,
       },

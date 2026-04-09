@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { Filter, MapPin } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, MapPin } from "lucide-react";
 
 import { CategoryStrip } from "~/components/category-strip";
 import { RestaurantList } from "~/components/restaurant-list";
@@ -13,7 +14,7 @@ export default function HomePage() {
     <HydrateClient>
       <main>
         {/* ── Editorial hero ──────────────────────────────────────── */}
-        <section className="border-b border-border">
+        <section className="border-border border-b">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
             <div className="grid items-end gap-10 lg:grid-cols-12">
               <div className="lg:col-span-8">
@@ -68,13 +69,13 @@ export default function HomePage() {
                 Restaurants near you
               </h2>
             </div>
-            <button
-              type="button"
-              className="border-border bg-card text-foreground hover:border-primary/40 hover:text-primary flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors"
+            <Link
+              href="/search"
+              className="text-primary hover:text-primary/80 group flex items-center gap-1.5 text-sm font-medium underline-offset-4 hover:underline"
             >
-              <Filter className="h-4 w-4" />
-              Filters
-            </button>
+              Browse all
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
 
           <Suspense fallback={<RestaurantGridSkeleton />}>
