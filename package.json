@@ -55,6 +55,8 @@
     "clean": "git clean -xdf node_modules",
     "clean:workspaces": "turbo run clean",
     "auth:generate": "bun --filter @powell-oss/auth generate",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
     "db:push": "turbo -F @powell-oss/db push",
     "db:studio": "turbo -F @powell-oss/db studio",
     "dev": "turbo watch dev --continue",

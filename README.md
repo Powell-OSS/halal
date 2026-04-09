@@ -31,22 +31,30 @@ Package manager: [Bun](https://bun.sh) (≥ 1.3). Node ≥ 22.21 (see [`.nvmrc`]
 
 ## Quick Start
 
+You'll need [Bun](https://bun.sh) and [Docker](https://www.docker.com/) installed.
+
 ```bash
 # 1. Install dependencies
 bun install
 
 # 2. Configure environment variables
 cp .env.example .env
-# Fill in POSTGRES_URL, AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET
+# Fill in AUTH_SECRET, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET
+# (POSTGRES_URL is preconfigured for the local docker Postgres)
 
-# 3. Push the Drizzle schema to the database
+# 3. Start the local Postgres container
+bun run db:up
+
+# 4. Push the Drizzle schema to the database
 bun run db:push
 
-# 4. Start the dev server
+# 5. Start the dev server
 bun run dev
 ```
 
 The Next.js app boots on <http://localhost:3000>.
+
+When you're done: `bun run db:down` stops the Postgres container. The data is persisted in a Docker volume (`halal_db_data`) so it survives restarts.
 
 ## Authentication
 
@@ -68,6 +76,7 @@ This rewrites `packages/db/src/auth-schema.ts` from the config in `packages/auth
 | `bun run lint` / `bun run lint:fix` | ESLint across all workspaces |
 | `bun run format` / `bun run format:fix` | Prettier across all workspaces |
 | `bun run typecheck` | `tsc --noEmit` across all workspaces |
+| `bun run db:up` / `bun run db:down` | Start/stop the local Postgres container |
 | `bun run db:push` | Push the Drizzle schema to the database |
 | `bun run db:studio` | Open Drizzle Studio |
 | `bun run ui-add` | Add a shadcn/ui component to `@powell-oss/ui` |
