@@ -5,6 +5,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { RestaurantCard } from "~/components/restaurant-card";
 import { useTRPC } from "~/trpc/react";
 
+/**
+ * Home-page discovery list. Renders all restaurants in a magazine-style
+ * layout (first one featured, rest in a 3-col grid). Filtering lives on the
+ * dedicated /search page, not here.
+ */
 export function RestaurantList() {
   const trpc = useTRPC();
   const { data: restaurants } = useSuspenseQuery(
@@ -23,15 +28,11 @@ export function RestaurantList() {
     );
   }
 
-  // Magazine-style: first restaurant is featured (spans 2 cols on sm+),
-  // the rest fill the grid in a 3-column layout.
   const [featured, ...rest] = restaurants;
 
   return (
     <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-      {featured && (
-        <RestaurantCard restaurant={featured} featured index={0} />
-      )}
+      {featured && <RestaurantCard restaurant={featured} featured index={0} />}
       {rest.map((r, i) => (
         <RestaurantCard key={r.id} restaurant={r} index={i + 1} />
       ))}

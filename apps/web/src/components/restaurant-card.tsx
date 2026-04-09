@@ -16,19 +16,23 @@ interface Props {
   index?: number;
 }
 
-export function RestaurantCard({ restaurant, featured = false, index = 0 }: Props) {
+export function RestaurantCard({
+  restaurant,
+  featured = false,
+  index = 0,
+}: Props) {
   return (
     <Link
       href={`/restaurants/${restaurant.slug}`}
       style={{ animationDelay: `${index * 60}ms` }}
       className={cn(
-        "group flex flex-col gap-3 animate-rise-in",
+        "group animate-rise-in flex flex-col gap-3",
         featured && "sm:col-span-2 sm:row-span-2",
       )}
     >
       <div
         className={cn(
-          "relative w-full overflow-hidden rounded-2xl bg-muted",
+          "bg-muted relative w-full overflow-hidden rounded-2xl",
           featured ? "aspect-[16/10]" : "aspect-[4/3]",
         )}
       >
