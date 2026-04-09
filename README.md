@@ -13,7 +13,7 @@ A [Turborepo](https://turborepo.com) monorepo built on the T3 stack:
 .vscode
   └─ Recommended extensions and settings for VSCode users
 apps
-  └─ nextjs              Next.js 16 + React 19 + Tailwind CSS v4
+  └─ web                 Next.js 16 + React 19 + Tailwind CSS v4
 packages
   ├─ api                 tRPC v11 router definition
   ├─ auth                Authentication via better-auth (Google OAuth)
@@ -93,7 +93,7 @@ The generator scaffolds `package.json`, `tsconfig.json`, an `eslint.config.ts`, 
 
 ### Next.js (Vercel)
 
-1. Create a new project on [Vercel](https://vercel.com), selecting `apps/nextjs` as the root directory.
+1. Create a new project on [Vercel](https://vercel.com), selecting `apps/web` as the root directory.
 2. Set the env vars: `POSTGRES_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`.
 3. Deploy.
 

@@ -13,8 +13,8 @@
         "typescript": "catalog:",
       },
     },
-    "apps/nextjs": {
-      "name": "@powell-oss/nextjs",
+    "apps/web": {
+      "name": "@powell-oss/web",
       "dependencies": {
         "@powell-oss/api": "workspace:*",
         "@powell-oss/auth": "workspace:*",
@@ -594,8 +594,6 @@
 
     "@powell-oss/github": ["@powell-oss/github@workspace:tooling/github"],
 
-    "@powell-oss/nextjs": ["@powell-oss/nextjs@workspace:apps/nextjs"],
-
     "@powell-oss/prettier-config": ["@powell-oss/prettier-config@workspace:tooling/prettier"],
 
     "@powell-oss/tailwind-config": ["@powell-oss/tailwind-config@workspace:tooling/tailwind"],
@@ -605,6 +603,8 @@
     "@powell-oss/ui": ["@powell-oss/ui@workspace:packages/ui"],
 
     "@powell-oss/validators": ["@powell-oss/validators@workspace:packages/validators"],
+
+    "@powell-oss/web": ["@powell-oss/web@workspace:apps/web"],
 
     "@prisma/client": ["@prisma/client@5.22.0", "", { "peerDependencies": { "prisma": "*" }, "optionalPeers": ["prisma"] }, "sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA=="],
 
