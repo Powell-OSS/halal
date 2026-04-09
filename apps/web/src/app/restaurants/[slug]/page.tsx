@@ -81,7 +81,7 @@ export default async function RestaurantPage({ params }: PageProps) {
           <span className="text-border">·</span>
           <span className="flex items-center gap-1.5">
             <MapPin className="text-muted-foreground h-4 w-4" />
-            {Number(restaurant.distanceMiles).toFixed(1)} mi
+            {restaurant.address}
           </span>
         </div>
 

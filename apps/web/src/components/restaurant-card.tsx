@@ -88,8 +88,12 @@ export function RestaurantCard({
           <span>
             {restaurant.deliveryMinMinutes}–{restaurant.deliveryMaxMinutes} min
           </span>
-          <span className="text-border">·</span>
-          <span>{Number(restaurant.distanceMiles).toFixed(1)} mi</span>
+          {restaurant.distanceMiles != null && (
+            <>
+              <span className="text-border">·</span>
+              <span>{Number(restaurant.distanceMiles).toFixed(1)} mi</span>
+            </>
+          )}
         </div>
       </div>
     </Link>
