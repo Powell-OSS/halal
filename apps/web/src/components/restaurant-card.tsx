@@ -6,7 +6,7 @@ import { cn } from "@powell-oss/ui";
 
 import { priceLevelLabel } from "~/lib/format";
 
-type Restaurant = RouterOutputs["restaurant"]["all"][number];
+type Restaurant = RouterOutputs["restaurant"]["all"]["items"][number];
 
 interface Props {
   restaurant: Restaurant;

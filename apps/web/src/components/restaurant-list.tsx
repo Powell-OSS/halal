@@ -7,20 +7,23 @@ import { useLocation } from "~/providers/location-provider";
 import { useTRPC } from "~/trpc/react";
 
 /**
- * Home-page discovery list. Fetches restaurants sorted by distance from the
- * user's location (via context). Uses useQuery (not useSuspenseQuery) because
- * location is resolved client-side after hydration.
+ * Home-page discovery list. Shows the 6 nearest restaurants in a
+ * magazine-style grid (first one featured). Uses the paginated `all`
+ * endpoint with limit=6.
  */
 export function RestaurantList() {
   const trpc = useTRPC();
   const { location } = useLocation();
 
-  const { data: restaurants = [], isLoading } = useQuery(
+  const { data, isLoading } = useQuery(
     trpc.restaurant.all.queryOptions({
       lat: location.lat,
       lng: location.lng,
+      limit: 6,
     }),
   );
+
+  const restaurants = data?.items ?? [];
 
   if (isLoading) {
     return (

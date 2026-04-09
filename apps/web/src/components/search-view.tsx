@@ -1,143 +1,103 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { Locate, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { ChevronDown, Loader2, Locate } from "lucide-react";
 
 import { cn } from "@powell-oss/ui";
-import { Input } from "@powell-oss/ui/input";
+import { Button } from "@powell-oss/ui/button";
 
 import { RestaurantCard } from "~/components/restaurant-card";
 import { categories } from "~/lib/categories";
 import { useLocation } from "~/providers/location-provider";
 import { useTRPC } from "~/trpc/react";
 
-const DEBOUNCE_MS = 200;
-
+/**
+ * Search page body. Reads ?q and ?cat from the URL (set by the header
+ * SearchBar), fetches paginated restaurants from the server (server handles
+ * text + category filtering + distance sort), renders a flat grid with
+ * "Load more" pagination.
+ */
 export function SearchView() {
   const trpc = useTRPC();
   const { location, loading: locLoading } = useLocation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Pass user location into the query so the server computes distances and
-  // sorts by nearest. The query key changes when location changes, so
-  // react-query will automatically refetch.
-  const { data: restaurants = [], isLoading } = useQuery(
-    trpc.restaurant.all.queryOptions({
-      lat: location.lat,
-      lng: location.lng,
-    }),
+  const q = searchParams.get("q") ?? undefined;
+  const cat = searchParams.get("cat") ?? undefined;
+  const hasFilter = (q && q.trim().length > 0) || (cat && cat !== "all");
+
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      ...trpc.restaurant.all.infiniteQueryOptions(
+        {
+          lat: location.lat,
+          lng: location.lng,
+          q: q?.trim() || undefined,
+          cat: cat && cat !== "all" ? cat : undefined,
+        },
+        {
+          getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+        },
+      ),
+    });
+
+  const allItems = useMemo(
+    () => data?.pages.flatMap((p) => p.items) ?? [],
+    [data],
   );
 
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  const urlQuery = searchParams.get("q") ?? "";
-  const urlCat = searchParams.get("cat") ?? "";
-
-  const [value, setValue] = useState(urlQuery);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    setValue(urlQuery);
-  }, [urlQuery]);
-
-  const updateParam = (key: "q" | "cat", next: string) => {
+  const updateCat = (slug: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (next.trim() && next !== "all") {
-      params.set(key, next.trim());
+    if (slug && slug !== "all") {
+      params.set("cat", slug);
     } else {
-      params.delete(key);
+      params.delete("cat");
     }
     const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  };
-
-  const handleChange = (next: string) => {
-    setValue(next);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => updateParam("q", next), DEBOUNCE_MS);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    updateParam("q", value);
+    router.replace(qs ? `/search?${qs}` : "/search", { scroll: false });
   };
 
   const clearAll = () => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setValue("");
-    router.replace(pathname, { scroll: false });
+    router.replace("/search", { scroll: false });
   };
 
-  // Client-side text + category filter over the server-sorted (by distance) list.
-  const q = urlQuery.trim().toLowerCase();
-  const cat = urlCat.toLowerCase();
-  const hasFilter = q.length > 0 || (cat.length > 0 && cat !== "all");
-  const activeCat = cat && cat !== "all" ? cat : "all";
-
-  const filtered = useMemo(() => {
-    return restaurants.filter((r) => {
-      const matchesSearch =
-        !q ||
-        r.name.toLowerCase().includes(q) ||
-        r.tagline.toLowerCase().includes(q) ||
-        r.cuisines.some((c) => c.toLowerCase().includes(q));
-
-      const matchesCat =
-        !cat ||
-        cat === "all" ||
-        r.cuisines.some((c) => c.toLowerCase() === cat);
-
-      return matchesSearch && matchesCat;
-    });
-  }, [restaurants, q, cat]);
+  const activeCat = cat && cat !== "all" ? cat.toLowerCase() : "all";
 
   return (
     <div className="space-y-8">
-      {/* ── Big search input ────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="relative">
-        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-5 h-5 w-5 -translate-y-1/2" />
-        <Input
-          ref={inputRef}
-          type="search"
-          value={value}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder="Search for restaurants, dishes, or cuisines…"
-          className="bg-card border-border h-14 rounded-2xl pr-14 pl-14 text-base shadow-sm md:text-lg"
-        />
-        {value && (
+      {/* ── Active filters summary ────────────────────────────── */}
+      {hasFilter && (
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+          {q && q.trim() && (
+            <span className="border-border bg-card text-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
+              🔍 {q}
+            </span>
+          )}
+          {cat && cat !== "all" && (
+            <span className="border-border bg-card text-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
+              {categories.find((c) => c.slug === cat)?.emoji} {cat}
+            </span>
+          )}
           <button
             type="button"
             onClick={clearAll}
-            aria-label="Clear search"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-1/2 right-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full transition"
+            className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline"
           >
-            <X className="h-4 w-4" />
+            Clear all
           </button>
-        )}
-      </form>
+        </div>
+      )}
 
       {/* ── Location indicator ─────────────────────────────────── */}
       <div className="text-muted-foreground flex items-center gap-2 text-xs">
         <Locate className={cn("h-3.5 w-3.5", locLoading && "animate-pulse")} />
-        {locLoading ? (
-          "Finding your location…"
-        ) : location.source === "gps" ? (
-          <>Sorted by distance from your location</>
-        ) : location.source === "stored" ? (
-          <>Sorted by distance from your last known location</>
-        ) : (
-          <>Showing results near Chicago, IL (default)</>
-        )}
+        {locLoading
+          ? "Finding your location…"
+          : `Sorted by distance from ${location.label}`}
       </div>
 
       {/* ── Cuisine filter chips ───────────────────────────────── */}
@@ -149,7 +109,7 @@ export function SearchView() {
               <button
                 key={category.slug}
                 type="button"
-                onClick={() => updateParam("cat", category.slug)}
+                onClick={() => updateCat(category.slug)}
                 className={cn(
                   "flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-colors",
                   isActive
@@ -174,31 +134,47 @@ export function SearchView() {
           <h2 className="font-display text-foreground mt-1 text-2xl tracking-tight italic sm:text-3xl">
             {isLoading
               ? "Loading…"
-              : `${filtered.length} ${filtered.length === 1 ? "restaurant" : "restaurants"}`}
+              : `${allItems.length} ${allItems.length === 1 ? "restaurant" : "restaurants"}`}
           </h2>
         </div>
-        {hasFilter && (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
-          >
-            Clear filters
-          </button>
-        )}
       </div>
 
-      {/* ── Results grid / empty states ─────────────────────────── */}
+      {/* ── Results grid ───────────────────────────────────────── */}
       {isLoading ? (
         <SearchSkeleton />
-      ) : filtered.length === 0 ? (
+      ) : allItems.length === 0 ? (
         <NoResults q={q} cat={cat} />
       ) : (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((r, i) => (
-            <RestaurantCard key={r.id} restaurant={r} index={i} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {allItems.map((r, i) => (
+              <RestaurantCard key={r.id} restaurant={r} index={i} />
+            ))}
+          </div>
+
+          {hasNextPage && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="rounded-full px-8"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading…
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Load more
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -218,7 +194,7 @@ function SearchSkeleton() {
   );
 }
 
-function NoResults({ q, cat }: { q: string; cat: string }) {
+function NoResults({ q, cat }: { q?: string; cat?: string }) {
   return (
     <div className="border-border bg-card flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-20 text-center">
       <div className="font-display text-foreground text-3xl italic">
@@ -241,11 +217,13 @@ function NoResults({ q, cat }: { q: string; cat: string }) {
             </span>
             . Try another dish, cuisine, or restaurant.
           </>
-        ) : (
+        ) : cat ? (
           <>
             No restaurants in{" "}
             <span className="text-foreground font-semibold">{cat}</span> yet.
           </>
+        ) : (
+          <>No restaurants found nearby.</>
         )}
       </p>
       <Link
